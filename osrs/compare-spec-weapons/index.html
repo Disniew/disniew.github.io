@@ -221,7 +221,7 @@
           bestRow = row;
           }
       });
-      rows.forEach(row => row.style.backgroundColor = '');
+      rows.forEach(row => row.classList.remove('highlight'));
       if (bestRow) bestRow.classList.add('highlight');
     }
 
