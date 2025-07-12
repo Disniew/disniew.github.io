@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compare Spec Weapons</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="number"] {
+      width: 100px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .add-button {
+      margin-top: 10px;
+    }
+    input.percentage {
+      width: 80px;
+    }
+    input.error {
+      border: 2px solid red;
+      background-color: #ffe6e6;
+    }
+    .remove-button {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+      border-bottom: 1px dotted #000;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: black;
+      color: white;
+      text-align: left;
+      padding: 5px;
+      border-radius: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; 
+      left: 50%;
+      margin-left: -100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.9em;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+body.dark-mode {
+  background-color: #424242;
+  color: #E0E0E0;
+}
+body.dark-mode table, 
+body.dark-mode th, 
+body.dark-mode td {
+  border-color: #616161;
+}
+body.dark-mode th {
+  background-color: #303030;
+}
+body.dark-mode input {
+  background-color: #333333;
+  color: #E0E0E0;
+  border-color: #757575;
+}
+body.dark-mode input.error {
+  border-color: #EF5350;
+  background-color: #5B2121;
+  box-shadow: 0 0 2px #EF5350; /* very subtle glow */
+}
+body.dark-mode a {
+  color: #2196F3; /* Link color */
+}
+body.dark-mode .remove-button {
+  background-color: #EF5350;
+}
+body.dark-mode .tooltip .tooltiptext {
+  background-color: #555555; /* dark gray tooltip background */
+  color: #E0E0E0;            /* light gray text */
+}
+
+
+  </style>
+</head>
+<body class="dark-mode">
+  <h1>Compare Spec Weapons</h1>
+  <button id="darkModeToggle">Toggle Dark Mode</button>
+
+  <p>Need help finding weapon stats and DPS? Visit the 
+    <a href="https://oldschool.runescape.wiki" target="_blank">Old School RuneScape Wiki</a> 
+    or the 
+    <a href="https://tools.runescape.wiki/osrs-dps/" target="_blank">OSRS DPS Calculator</a>.</p>
+
+  <fieldset>
+    <legend>Main Weapon</legend>
+    <label for="mainDPS" style="display: inline-block; margin-right: 8px;">DPS:</label>
+    <input type="number" id="mainDPS" step="0.01" />       
+  </fieldset>
+
+  <p>
+    The spec weapon with the <strong>bonus damage per spec energy</strong> is your 
+    <span class="tooltip">theoretical
+      <span class="tooltiptext">Assuming infinite fight length and no tickloss.<br> In practice one can lose ticks and/or have more/less remaining (lost) spec energy at the end of the fight.</span>
+    </span> 
+    best spec weapon.
+  </p>
+
+
+  <table id="specTable">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Spec DPS</th>
+        <th>Spec cost (%)</th>
+        <th>Attack speed (ticks)</th>
+        <th>Bonus damage per spec energy</th>
+        <th>Remove</th>
+      </tr>
+    </thead>
+    <tbody id="specTableBody">
+      <tr>
+        <th>Spec weapon 1</th>
+        <td><input type="number" step="0.01" min="0" /></td>
+        <td><input type="number" class="percentage" step="5" min="0" max="100" /></td>
+        <td><input type="number" class="integer-only" step="1" min="1" /></td>
+        <td><input type="text" readonly /></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="add-button" onclick="addRow()">Add Spec Weapon</button>
+
+  <h2>The Math Behind the Calculator</h2>
+  <p>
+    First, we calculate how much extra damage the special attack does compared to your main weapon:
+  </p>
+  <p>
+    <strong>Extra Damage</strong> = (<em>Spec DPS</em> − <em>Main DPS</em>) × <em>Spec Attack Speed</em>
+  </p>
+  <p>
+    We use <strong>DPS</strong> (damage per second) instead of average hit because your spec weapon may have a different attack speed compared to your main weapon.
+  </p>
+  
+  <p>
+    However, this raw bonus doesn't account for special energy usage. So we divide the extra damage by the special cost:
+  </p>
+  <p>
+    <strong>Bonus Damage per Spec Energy</strong> = (<em>Spec DPS</em> − <em>Main DPS</em>) × <em>Attack Speed</em> ÷ <em>Spec Cost</em>
+  </p>
+  <p>
+    This gives a normalized number to compare the effectiveness of different special weapons.
+    The higher the bonus damage per spec energy, the more efficient the weapon is for special attacks.
+  </p>
+  
+
+  <script>
+    let rowCount = 1;
+
+    function addRow() {
+      rowCount++;
+      const tableBody = document.getElementById('specTableBody');
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <th>Spec weapon ${rowCount}</th>
+        <td><input type="number" step="0.01" min="0" /></td>
+        <td><input type="number" class="percentage" step="5" min="0" max="100" /></td>
+        <td><input type="number" class="integer-only" step="1" min="1" /></td>
+        <td><input type="text" readonly /></td>
+        <td><button class="remove-button" onclick="removeRow(this)">Remove</button></td>
+      `;
+
+      tableBody.appendChild(row);
+      attachListenersToRow(row);
+    }
+
+    function removeRow(button) {
+      const row = button.closest('tr');
+      row.remove();
+    }
+
+    function highlightBestRow() {
+      const rows = document.querySelectorAll('#specTableBody tr');
+      let bestValue = -Infinity;
+      let bestRow = null;
+       rows.forEach(row => {
+          const value = parseFloat(row.querySelector('input[readonly]').value);
+          if (!isNaN(value) && value > bestValue) {
+          bestValue = value;
+          bestRow = row;
+          }
+      });
+       rows.forEach(row => row.style.backgroundColor = '');
+      if (bestRow) bestRow.style.backgroundColor = '#e0ffe0'; // light green
+    }
+
+    function validateFieldPositive(input) {
+      const value = parseFloat(input.value)
+      const isValid = !isNaN(value) && value >= 0;
+      if (!isValid) { 
+        input.classList.add('error');
+        input.title = 'Value must positive, including 0.';
+      } else {
+        input.classList.remove('error');
+        input.title = '';
+      }
+    }
+
+    function validateFieldStrictlyPositive(input) {
+      const value = parseFloat(input.value)
+      const isValid = !isNaN(value) && value > 0;
+      if (!isValid) { 
+        input.classList.add('error');
+        input.title = 'Value must positive, excluding 0.';
+      } else {
+        input.classList.remove('error');
+        input.title = '';
+      }
+    }
+
+    function validateSpecCost(input) {
+      const value = parseFloat(input.value);
+      const isValid = !isNaN(value) && value > 0 && value <= 100;
+      if (!isValid) {
+          input.classList.add('error');
+          input.title = 'Spec cost must be between 1 and 100%';
+      } else {
+          input.classList.remove('error');
+          input.title = '';
+      }
+    }
+
+    // Calculate and update bonus damage per spec energy for a given row
+    function updateBonusDamage(row) {
+      const mainDPSinput = document.getElementById('mainDPS')
+      const mainDPS = parseFloat(mainDPSinput.value) || -1;
+      validateFieldPositive(mainDPSinput);
+
+      const inputs = row.querySelectorAll('input');
+      const specDPS = parseFloat(inputs[0].value) || -1;
+      validateFieldPositive(inputs[0]);
+      const specCost = parseFloat(inputs[1].value) || -1;
+      validateSpecCost(inputs[1]);
+      const attackSpeed = parseFloat(inputs[2].value) || -1;
+      validateFieldStrictlyPositive(inputs[2]);
+
+      if (mainDPS >= 0 && specCost > 0 && attackSpeed > 0) {
+        const bonusDamage = (specDPS - mainDPS) * attackSpeed / specCost;
+        inputs[3].value = bonusDamage.toFixed(2);
+      } else {
+        inputs[3].value = "incomplete inputs"
+      }
+      highlightBestRow();
+    }
+
+    // Attach event listeners for inputs in a specific row to update calculations on input change
+    function attachListenersToRow(row) {
+      const inputs = row.querySelectorAll('input:not([readonly])');
+      inputs.forEach(input => {
+        input.addEventListener('input', () => updateBonusDamage(row));
+      });
+    }
+
+    function attachMainListeners() {
+    const mainDpsInput = document.getElementById('mainDPS');
+    mainDpsInput.addEventListener('input', () => {
+      const rows = document.querySelectorAll('#specTableBody tr');
+      rows.forEach(updateBonusDamage);
+    });
+    }
+
+    // On load, attach event listeners for existing rows and for DPS of main weapon
+    document.getElementById('darkModeToggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const rows = document.querySelectorAll('#specTableBody tr');
+      rows.forEach(attachListenersToRow);
+      const mainDpsInput = document.getElementById('mainDPS');
+      mainDpsInput.addEventListener('input', () => {
+        const rows = document.querySelectorAll('#specTableBody tr');
+        rows.forEach(updateBonusDamage)
+      })
+    });
+    </script>
+</body>
+</html>
