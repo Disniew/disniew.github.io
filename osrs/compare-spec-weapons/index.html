@@ -104,6 +104,12 @@
     body.dark-mode .tooltip {
       border-bottom: 2px dotted #82aaff; /* matches link color */
     }  
+    .highlight {
+      background-color: #e0ffe0; /* light mode */
+    }
+    body.dark-mode .highlight {
+      background-color: #2e5933; /* dark mode friendly green */
+    }
   </style>
 </head>
 <body class="dark-mode">
@@ -215,8 +221,8 @@
           bestRow = row;
           }
       });
-       rows.forEach(row => row.style.backgroundColor = '');
-      if (bestRow) bestRow.style.backgroundColor = '#e0ffe0'; // light green
+      rows.forEach(row => row.style.backgroundColor = '');
+      if (bestRow) bestRow.classList.add('highlight');
     }
 
     function validateFieldPositive(input) {
