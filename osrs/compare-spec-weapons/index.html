@@ -128,11 +128,11 @@
   </fieldset>
 
   <p>
-    The spec weapon with the <strong>bonus damage per spec energy</strong> is your 
+    The spec weapon with the <strong>extra damage per spec energy</strong> is your 
     <span class="tooltip">theoretical
       <span class="tooltiptext">Assumes no tickloss switching and no leftover spec energy at the end of the fight.</span>
     </span> 
-    best spec weapon.
+    best special attack weapon.
   </p>
 
 
@@ -143,7 +143,7 @@
         <th>Spec DPS</th>
         <th>Spec cost (%)</th>
         <th>Attack speed (ticks)</th>
-        <th>Bonus damage per spec energy</th>
+        <th>Extra damage per spec energy</th>
         <th>Remove row</th>
       </tr>
     </thead>
@@ -163,24 +163,29 @@
 
   <h2>The Math Behind the Calculator</h2>
   <p>
-    First, we calculate how much extra damage the special attack does compared to your main weapon:
+    Whenever we use our special attack weapon, we gain damage by speccing with it, but we also lose damage by not attacking with our main weapon.<br>
+    To account for this, we calculate how much <strong>extra damage</strong> the special attack does compared to your main weapon:
   </p>
   <p>
     <strong>Extra Damage</strong> = (<em>Spec DPS</em> − <em>Main DPS</em>) × <em>Spec Attack Speed</em>
   </p>
   <p>
-    We use <strong>DPS</strong> (damage per second) instead of average hit because your spec weapon may have a different attack speed compared to your main weapon.
+    It is important that we use <strong>DPS</strong> (damage per second) instead of average hit because the attack speed of your main weapon and special attack weapon need not be the same.<br>
+    For example, if our main weapon is a scythe (5t), then a zaryte crossbow spec would lose out on 5 ticks of scythe dps, but a voidwaker spec would only lose out on 4 ticks of scythe dps.
   </p>
   
   <p>
-    However, this raw bonus doesn't account for special energy usage. So we divide the extra damage by the special cost:
+    The last factor to account for is how much special attack energy your special attack weapons use. <Br>
+    For example, if we are comparing voidwaker (50%) against zaryte crossbow (75%), we get ×1.5 as many voidwakers as zcb specs. 
+    One way to account for this is to multiply the <em>extra damage</em> from voidwaker by 1.5 and compare this against the <em>extra damage</em> from zcb.<br>
+    A more generalised approach is to divide the <em>extra damage</em> by the spec cost for every spec weapon to get the extra damage per spec energy:
   </p>
   <p>
-    <strong>Bonus Damage per Spec Energy</strong> = (<em>Spec DPS</em> − <em>Main DPS</em>) × <em>Attack Speed</em> ÷ <em>Spec Cost</em>
+    <strong>Extra Damage per Spec Energy</strong> = (<em>Spec DPS</em> − <em>Main DPS</em>) × <em>Attack Speed</em> ÷ <em>Spec Cost</em>
   </p>
   <p>
     This gives a normalized number to compare the effectiveness of different special weapons.
-    The higher the bonus damage per spec energy, the more efficient the weapon is for special attacks.
+    The higher the extra damage per spec energy, the more efficient the weapon is for special attacks.
   </p>
   
 
