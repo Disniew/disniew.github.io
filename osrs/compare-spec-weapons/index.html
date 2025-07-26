@@ -105,10 +105,17 @@
       border-bottom: 2px dotted #82aaff; /* matches link color */
     }  
     .highlight {
-      background-color: #e0ffe0; /* light mode */
+      background-color: #89B559; /* light mode */
     }
     body.dark-mode .highlight {
       background-color: #2e5933; /* dark mode friendly green */
+    }
+    input[readonly] {
+      background-color: #e0e0e0;
+      cursor: default;
+    }
+    body.dark-mode input[readonly] {
+      background-color: #555;
     }
   </style>
 </head>
@@ -143,6 +150,7 @@
         <th>Spec DPS</th>
         <th>Spec cost (%)</th>
         <th>Attack speed (ticks)</th>
+        <th>Extra damage</th>
         <th>Extra damage per spec energy</th>
         <th>Remove row</th>
       </tr>
@@ -154,6 +162,7 @@
         <td><input type="number" class="percentage" step="5" min="0" max="100" /></td>
         <td><input type="number" class="integer-only" step="1" min="1" /></td>
         <td><input type="text" readonly /></td>
+        <td><input type="text" readonly /></td>
         <td></td>
       </tr>
     </tbody>
@@ -163,29 +172,29 @@
 
   <h2>The Math Behind the Calculator</h2>
   <p>
-    Whenever we use our special attack weapon, we gain damage by speccing with it, but we also lose damage by not attacking with our main weapon.<br>
+    Whenever we use our special attack weapon, we gain damage by speccing with it, but it often forgotten that we also lose damage by not attacking with our main weapon.<br>
     To account for this, we calculate how much <strong>extra damage</strong> the special attack does compared to your main weapon:
   </p>
   <p>
     <strong>Extra Damage</strong> = (<em>Spec DPS</em> − <em>Main DPS</em>) × <em>Spec Attack Speed</em>
   </p>
   <p>
-    It is important that we use <strong>DPS</strong> (damage per second) instead of average hit because the attack speed of your main weapon and special attack weapon need not be the same.<br>
-    For example, if our main weapon is a scythe (5t), then a zaryte crossbow spec would lose out on 5 ticks of scythe dps (=1 scythe swing), but a voidwaker spec would only lose out on 4 ticks of scythe dps (=0.8 scythe swings).
+    It is important that we use <strong>DPS</strong> (damage per second) instead of average hit in this calculation because the attack speed of your main weapon and special attack weapon need not be the same.<br>
+    For example, if our main weapon is a scythe (5 tick), then a zaryte crossbow spec would lose out on 5 ticks of scythe dps (or 1 scythe swing), but a voidwaker spec would only lose you 4 ticks of scythe dps (=0.8 scythe swings).
   </p>
   
   <p>
     The last factor to account for is how much special attack energy your special attack weapons use. <Br>
     For example, if we are comparing voidwaker (50%) against zaryte crossbow (75%), we get ×1.5 as many voidwakers as zcb specs. 
     One way to account for this is to multiply the <em>extra damage</em> from voidwaker by 1.5 and compare this against the <em>extra damage</em> from zcb.<br>
-    A more generalised approach is to divide the <em>extra damage</em> by the spec cost for every spec weapon to get the extra damage per spec energy:
+    A more generalised approach is to divide the <em>extra damage</em> by the spec cost for every spec weapon to get the <em>extra damage per spec energy</em>:
   </p>
   <p>
-    <strong>Extra Damage per Spec Energy</strong> = (<em>Spec DPS</em> − <em>Main DPS</em>) × <em>Attack Speed</em> ÷ <em>Spec Cost</em>
+    <strong>Extra Damage per Spec Energy</strong> = (<em>Extra damage</em>) ÷ <em>Spec Cost</em>
   </p>
   <p>
     This gives a normalized number to compare the effectiveness of different special weapons.
-    The higher the extra damage per spec energy, the more efficient the weapon is for special attacks.
+    The higher this number, the more efficient the weapon is for special attacks.
   </p>
   
 
@@ -202,6 +211,7 @@
         <td><input type="number" step="0.01" min="0" /></td>
         <td><input type="number" class="percentage" step="5" min="0" max="100" /></td>
         <td><input type="number" class="integer-only" step="1" min="1" /></td>
+        <td><input type="text" readonly /></td>
         <td><input type="text" readonly /></td>
         <td><button class="remove-button" onclick="removeRow(this)">Remove</button></td>
       `;
@@ -269,7 +279,7 @@
     // Calculate and update bonus damage per spec energy for a given row
     function updateBonusDamage(row) {
       const mainDPSinput = document.getElementById('mainDPS')
-      const mainDPS = parseFloat(mainDPSinput.value) || -1;
+      const mainDPS = isNaN(parseFloat(mainDPSinput.value)) ? -1 : parseFloat(mainDPSinput.value);
       validateFieldPositive(mainDPSinput);
 
       const inputs = row.querySelectorAll('input');
@@ -281,10 +291,13 @@
       validateFieldStrictlyPositive(inputs[2]);
 
       if (mainDPS >= 0 && specCost > 0 && attackSpeed > 0) {
-        const bonusDamage = (specDPS - mainDPS) * attackSpeed / specCost;
+        const bonusDamage = (specDPS - mainDPS) * attackSpeed;
+        const bonusDamagePerEnergy = bonusDamage / specCost;
         inputs[3].value = bonusDamage.toFixed(2);
+        inputs[4].value = bonusDamagePerEnergy.toFixed(2);
       } else {
-        inputs[3].value = "incomplete inputs"
+        inputs[3].value = "incomplete inputs";
+        inputs[4].value = "incomplete inputs";
       }
       highlightBestRow();
     }
